@@ -1,0 +1,140 @@
+#!/bin/bash
+#
+#SBATCH -p compute-64-512
+#SBATCH --mem 25G
+#SBATCH -t 168:00:00
+#SBATCH --output=scell_methylation_pipeline%j.log
+#SBATCH -e scell_methylation_pipeline-%j.out
+#SBATCH -e scell_methylation_pipeline-%j.err
+#SBATCH --job-name=scell_methylation_pipeline
+
+module add samtools/1.10
+module add trimgalore/0.6.5
+module add bowtie2/2.3.5.1
+module add bismark/0.22.3
+module add R/4.0.0
+
+mkdir ../trimmed
+mkdir ../alignments
+mkdir ../alignments/methylation/files
+mkdir ../reports
+mkdir ../scmethylseq_analysis
+
+#This pipeline is run in single-end mode to increase the mapping efficiency. This is due to the nature os Bisulfite sequencing samples generally having uneven coverage
+
+#Generate a file with the list of sample names to use as input for HISAT2
+
+ls *fastq.gz|sed 's/.fastq.gz//g' > ../trimmed/sample_names.txt
+
+#Trimming of FASTQ files using Trim Galore. 
+
+for i in *.fastq.gz
+  do 
+      trim_galore --fastqc -o ../trimmed  --clip_R1 6 $i
+  done
+mv ../trimmed/*trimming_report.txt ../reports
+mv ../trimmed/*fastqc* ../reports
+
+#Bismark Alignment to reference genome hg38
+#Reference genome preparation
+
+#bismark_genome_preparation /gpfs/data/genomic-imprinting/Claudia/embryos/smethyl_seq/reference
+
+#Alignment
+
+cd  ../trimmed
+
+cat sample_names.txt| while read line 
+  do 
+      bismark --fastq --non_directional --rg_tag --rg_id $line --rg_sample $line --genome /gpfs/data/genomic-imprinting/Claudia/embryos/smethyl_seq/reference -o ../alignments $line*fq.gz  
+  done
+
+#Bismark Deduplication
+
+cd ../alignments
+
+for i in ../alignments/*bam 
+  do 
+      deduplicate_bismark --bam $i
+  done
+
+#Retrieve alignment and deduplication reports
+
+mv ../alignments/*txt ../reports
+
+#Bismark -Methylation extraction
+
+for i in ../alignments/*deduplicated.bam
+  do  
+      bismark_methylation_extractor -s -o ../alignments/methylation_files $i
+  done
+
+#Retrieve methylation extraction reports
+
+mv ../alignments/methylation_files/*splitting_report.txt ../reports
+mv ../alignments/methylation_files/*bias.txt ../reports
+
+#Generate Coverage and Bedgraph files
+
+#Create a file with the list of sample names to use as input for bismark2bedGraph and gather all calls per sample/cell in one file
+
+ls *R1*deduplicated.bam|sed 's/_L.*//g' > methylation_files/all_met_samples.txt.txt
+
+cd ../alignments/methylation_files
+
+cat all_met_samples.txt| while read line 
+  do 
+      bismark2bedGraph -o $line --counts --buffer_size 10G CpG*$line*deduplicated.txt -d CpG_methylation
+  done
+
+cat all_met_samples.txt| while read line
+  do 
+      bismark2bedGraph --CX -o $line --counts --buffer_size 10G CHH*$line*deduplicated.txt -d CHH_methylation
+  done
+
+cat all_met_samples.txt| while read line
+  do 
+      bismark2bedGraph --CX -o $line --counts --buffer_size 10G CHG*$line*deduplicated.txt -d CHG_methylation
+  done
+
+#Binarise the predicted methylation states for methylation in CpG, CHH and CHG context. Methylation states <0.1 are set to 0; > 0.1 and < 0.9 are set to 0.5 and > 0.9 are set to 1.
+
+for dir in `ls -ad *methylation`
+  do    
+      gzip -d $dir/*cov.gz 
+      for i in $dir/*cov
+        do
+            #Generate a methylation coverage binarised file for further analysis
+            awk '$4>90 {$7=1};$4<10 {$7=0};$4>10&&$4<90{$7=0.5}1' $i>../../scmethylseq_analysis/$i.binarised
+            #Calculate the average binarised methylation per sample and collect it in a table
+            awk '$4>90 {$7=1};$4<10 {$7=0};$4>10&&$4<90{$7=0.5}1 {x=x+$7} END {print x*100/NR}' $i>>methylation.txt
+            ls $i>>list_of_files.txt
+            paste methylation.txt list_of_files.txt>../../scmethylseq_analysis/all_samples_methylation.txt
+        done 
+  done
+
+#Add sample name to FASTQC report summary.txt file
+
+cd ../../reports
+
+for i in *zip
+  do 
+      unzip $i
+  done
+
+for i in *fastqc/*.txt 
+  do 
+      dir=$(dirname "$i"); n=$(basename "$i"); mv "$dir/$n" "$dir/$dir"_"$n"
+  done
+
+#Retrieve FASTQC summary.txt file 
+
+cp *fastqc/*summary.txt ../reports
+
+#Remove unzipped fasted directories
+
+yes|rm -r *fastqc
+
+#Generate All Metrics summary table for all samples analysed
+
+R < /gpfs/data/genomic-imprinting/Claudia/embryos/smethyl_seq/scmethylseq_pipeline_all_metrics.R --save

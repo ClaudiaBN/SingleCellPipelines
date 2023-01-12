@@ -1,0 +1,93 @@
+#!/bin/bash
+#
+#SBATCH -p compute-64-512
+#SBATCH --mem 20G
+#SBATCH -t 168:00:00
+#SBATCH --output=scrna_pipeline%j.log
+#SBATCH -e scrna_pipeline-%j.out
+#SBATCH -e scrna_pipeline-%j.err
+#SBATCH --job-name=scrna_pipeline
+
+module add samtools/1.11
+module add trimgalore/0.6.5
+module add bowtie2/2.3.5.1
+module add bismark/0.22.3
+module add HISAT2/2.1.0
+module add R/4.0.0
+
+#The script has to be run from the directory storing the .fastq.gz files. All directories to store output files are then created.
+#Creating directories
+
+#mkdir ../trimmed
+#mkdir ../alignments
+#mkdir ../reports
+#mkdir ../srnaseq_analysis
+
+#Generate a file with the list of sample names to use as input for HISAT2
+
+ls *fastq.gz|sed 's/.fastq.gz//g' > ../trimmed/sample_names.txt
+
+#Trimming of FASTQ files using Trim Galore
+
+for i in *gz
+  do 
+      trim_galore --fastqc --length 35 --quality 13 -o ../trimmed $i
+  done 
+
+#Retrieve FASTQC and trimming reports
+
+mv ../trimmed/*trimming_report.txt ../reports
+mv ../trimmed/*fastqc* ../reports
+
+#Alignment using HISAT
+
+cd  ../trimmed
+
+cat sample_names.txt|while read line
+  do 
+      hisat2 -x /gpfs/data/genomic-imprinting/Claudia/embryos/srnaseq_data/reference_ensembl/human_hg38_ensembl -q --min-intronlen 20 --max-intronlen 500000 --phred33 --summary-file ../reports/$line.alignment.hisat.report.txt -U $line*fq.gz -S ../alignments/$line.sam --rg-id $line
+  done 
+
+#SAM to BAM conversion, sorting and indexing
+
+for i in ../alignments/*sam
+  do 
+        samtools view -b -S $i> $i.bam 
+  done
+for i in ../alignments/*bam
+  do 
+        samtools sort -o $i.sorted.bam $i;done
+for i in ../alignments/*sorted.bam
+  do 
+        samtools index $i
+  done
+
+#Add sample name to FASTQC report summary.txt file
+
+cd ../reports
+
+for i in *zip
+  do 
+      unzip $i
+  done
+
+for i in *fastqc/*.txt 
+  do 
+      dir=$(dirname "$i"); n=$(basename "$i"); mv "$dir/$n" "$dir/$dir"_"$n"
+  done
+
+#Retrieve FASTQC summary.txt file
+
+cp *fastqc/*summary.txt ../reports
+
+#Remove unzipped fastqc directories
+
+yes|rm -r *fastqc
+
+#Generate All Metrics summary table
+
+R < /gpfs/data/genomic-imprinting/Claudia/embryos/srnaseq_data/scrnaseq_pipeline_all_metrics.R --save
+
+#Extract read counts and create count table
+
+R < /gpfs/data/genomic-imprinting/Claudia/embryos/srnaseq_data/bam_read_counts.R --save
