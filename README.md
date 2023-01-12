@@ -1,7 +1,7 @@
 # SingleCellPipelines
 ## Description
 Source code for the implementation of scMethyl-seq and scRNA-seq pipelines.
-## Presequisites
+## Prerequisites
 The following programs need to be installed (This pipeline was run using the shown version):
 <ol>
 <li>Trimgalore (v0.6.5)</li>
