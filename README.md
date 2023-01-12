@@ -15,7 +15,7 @@ The following programs need to be installed (This pipeline was run using the sho
 
 ### scMethyl-SEQ pipeline
 #### 1. Quality assessment and adapter trimming
-Read quality is assessed using software FASTQC and trimgalore.
+Read quality was assessed using software FASTQC and trimgalore.
 #### 2. Alignment, duplication removal and methylation extraction
 These 3 steps were performed using the Bisulfite Read Mapper and Methylation Caller Bismark. Alignment to the reference genome (see Annotations) was performed in single-end mode to increase the mapping efficiency.
 Methylation call files were processed so methylation states were binarized: methylation < 0.1 was set to 0 (unmethylated cytosine), methylation > 0.1 and < 0.9 was set to 0.5 (equivalent to allelic methylation) and methylation > 0.9 was set to 1 (methylated cytosine).
@@ -25,9 +25,9 @@ Quality, alignment and methylation metrics were gathered in a table for analysis
 
 ### scRNA-SEQ pipeline
 #### 1. Quality assessment and adapter trimming
-Read quality is assessed using software FASTQC and trimgalore.
+Read quality was assessed using software FASTQC and trimgalore.
 #### 2. Alignment
-Alignment is performed using HISAT2.
+Alignment was performed using HISAT2.
 #### 3. Generating summary table
 Quality and alignment were gathered in a table for analysis/filtering.
 
