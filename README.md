@@ -25,11 +25,13 @@ Quality, alignment and methylation metrics were gathered in a table for analysis
 #### 4. Mapping coverage files to different genomic features
 Binarised methylation calls (.cov files generated with bismark) were mapped to the following features using coordinates from the hg38 human genome:
 
-<p>CpG islands (available from UCSC).</p> 
-<p>Gene promoter regions in CpG islands (available from UCSC): promoters were classified according to CpG island density (high meidum and low), following the criteria described by Xie et al. (https://pubmed.ncbi.nlm.nih.gov/23664764/).</p>
-<p>Enhancers class I and class II (see Alvaro Rada-Iglesias et al., https://www.nature.com/articles/nature09692).</p>
-<p>Solo WCGW CpGs (see Zhou et al., https://zwdzwd.github.io/pmd).</p>
-<p>LINE, SINE and LTR repeats (available from UCSC browser, using RepeatMasker).</p>
+<ul>
+<li>CpG islands (available from UCSC).</li>
+<li>Gene promoter regions in CpG islands (available from UCSC): promoters were classified according to CpG island density (high meidum and low), following the criteria described by Xie et al. (https://pubmed.ncbi.nlm.nih.gov/23664764/).</li>
+<li>Enhancers class I and class II (see Alvaro Rada-Iglesias et al., https://www.nature.com/articles/nature09692).</li>
+<li>Solo WCGW CpGs (see Zhou et al., https://zwdzwd.github.io/pmd).</li>
+<li>LINE, SINE and LTR repeats (available from UCSC browser, using RepeatMasker).</li>
+</ul>
 
 #### Annotation files
 
