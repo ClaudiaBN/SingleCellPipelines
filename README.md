@@ -23,7 +23,7 @@ Methylation call files were processed so methylation states were binarised: meth
 #### 3. Generating summary table
 Quality, alignment and methylation metrics were gathered in a table for analysis/filtering. This step is implemented using scmethylseq_pipeline_all_metrics.R.
 #### 4. Mapping coverage files to different genomic features
-Binarised methylation calls (.cov files generated with bismark) were mapped to the following features using coordinates from the hg38 human genome:
+Methylation for specific genomic features was extracted. Binarised methylation calls (.cov files generated with bismark) were mapped to the following features using coordinates from the hg38 human genome:
 
 <ul>
 <li>CpG islands (available from UCSC).</li>
