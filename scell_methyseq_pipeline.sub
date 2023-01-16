@@ -131,7 +131,7 @@ for i in *fastqc/*.txt
 
 cp *fastqc/*summary.txt ../reports
 
-#Remove unzipped fasted directories
+#Remove unzipped fastqc directories
 
 yes|rm -r *fastqc
 
