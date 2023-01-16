@@ -42,7 +42,7 @@ Read quality was assessed using software FASTQC and trimgalore.
 Alignment was performed using HISAT2.
 #### 3. Generating summary table
 Quality and alignment were gathered in a table for analysis/filtering. This step is implemented using scrnaseq_pipeline_all_metrics.R
-#### 4. Extract read counts for each gene
+#### 4. Extracting read counts for each gene
 Counts were obtained from the sorted .bam files using the R package (see bam_get_counts.R).
 
 
