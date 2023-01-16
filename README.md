@@ -29,7 +29,7 @@ Methylation for specific genomic features was extracted. Binarised methylation c
 <li>CpG islands (available from UCSC).</li>
 <li>Gene promoter regions in CpG islands (available from UCSC): promoters were classified according to CpG island density (high meidum and low), following the criteria described by Xie et al. (https://pubmed.ncbi.nlm.nih.gov/23664764/).</li>
 <li>Enhancers class I and class II (see Alvaro Rada-Iglesias et al. , https://www.nature.com/articles/nature09692).</li>
-<li>Solo WCGW CpGs (see Zhou *et al*. , https://zwdzwd.github.io/pmd).</li>
+<li>Solo WCGW CpGs (see Zhou et al. , https://zwdzwd.github.io/pmd).</li>
 <li>LINE, SINE and LTR repeats (available from UCSC browser, using RepeatMasker).</li>
 </ul>
 Mapping and plots were generated using the provided R script feature_mapping_and_plotting.R
