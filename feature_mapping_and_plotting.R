@@ -7,7 +7,7 @@
 #Get file paths
 files_cov <- list.files(path="/gpfs/data/genomic-imprinting/Claudia/embryos/smethyl_seq/alignments/methylation_files/CpG_methylation", pattern="*cov", full.names=TRUE, recursive=FALSE)
 #Read the files
-input_cov2<-lapply(files_cov, read.delim, header=FALSE, stringsAsFactors=FALSE,sep=" ")
+input_cov<-lapply(files_cov, read.delim, header=FALSE, stringsAsFactors=FALSE,sep=" ")
 #Get file names
 samples<-data.frame(samples=list.files(path = "/gpfs/data/genomic-imprinting/Claudia/embryos/smethyl_seq/alignments/methylation_files/CpG_methylation", pattern ="cov", 
                     full.names = FALSE))
